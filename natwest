@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 # -*- mode: python -*-
 
 import sys
@@ -14,7 +15,11 @@ from py_natwest import Natwest
 def main():
     nw = Natwest()
     nw.get_page()
+    nw.enter_customer_number()
+    nw.login()
 
+#    nw.get_page()
 
 if __name__ == '__main__':
     main()
+
