@@ -11,15 +11,19 @@ if not getattr(sys, 'frozen', False):
 
 from py_natwest import Natwest
 
-
-def main():
+def main(arg):
+    print(arg)
     nw = Natwest()
-    nw.get_page()
-    nw.enter_customer_number()
-    nw.login()
 
-#    nw.get_page()
 
 if __name__ == '__main__':
-    main()
+    try:
+        arg = sys.argv[1]
+    except Exception:
+        print("usage: " + sys.argv[0] + " command\n")
+        print("Available commands:")
+        print("statement : download bank statement")
+        print("balance : get account balance")
+        print("transactions : get last transactions")
+    main(arg)
 
