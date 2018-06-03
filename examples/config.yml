@@ -1,0 +1,15 @@
+---
+natwest:
+  customer_number: '12345678'
+  password: '1234567'
+  pin: 1234
+
+zoom_manangement:
+  login: 'martin'
+  password: 'password'
+
+database:
+  host: localhost
+  name: zoom
+  user: root
+  password: password

@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # -*- mode: python -*-
 
+import os
 import sys
 
 if not getattr(sys, 'frozen', False):
@@ -9,21 +10,56 @@ if not getattr(sys, 'frozen', False):
 
     imp.load_module('py_natwest', *imp.find_module('lib'))
 
+from py_natwest import ConfigManager
+from py_natwest import Database
 from py_natwest import Natwest
 
-def main(arg):
-    print(arg)
-    nw = Natwest()
 
+def get_tmp_dir():
+    return os.path.dirname(os.path.realpath(__file__)) + "/tmp"
+
+
+def check_tmp_dir():
+    tmp_dir = get_tmp_dir()
+    if not os.path.exists(tmp_dir):
+        os.mkdir(tmp_dir, 0755)
+
+
+def clear_temp():
+    for f in os.listdir(get_tmp_dir()):
+        os.remove(get_tmp_dir() + '/' + f)
+
+
+def get_statement():
+    for f in os.listdir(get_tmp_dir()):
+        if f.endswith("csv"):
+            return f
+
+    return None
+
+
+def main(arg):
+    config = ConfigManager()
+    database = Database(config)
+
+    check_tmp_dir()
+    clear_temp()
+
+    if database.get_task() == '0' and arg != "force":
+        print("Nothing to do with me")
+        os.sys.exit(0)
+
+    if database.get_task() == '1':
+        database.update_task()
+
+    Natwest(config)
+    # Hidden prod...
 
 if __name__ == '__main__':
     try:
         arg = sys.argv[1]
     except Exception:
-        print("usage: " + sys.argv[0] + " command\n")
-        print("Available commands:")
-        print("statement : download bank statement")
-        print("balance : get account balance")
-        print("transactions : get last transactions")
-    main(arg)
+        main('null')
+        sys.exit(0)
 
+    main(arg)

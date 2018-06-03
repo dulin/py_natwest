@@ -13,7 +13,7 @@ __pycache__/
 
 # C extensions
 *.so
-
+/tmp
 # Distribution / packaging
 .Python
 build/
@@ -159,3 +159,6 @@ com_crashlytics_export_strings.xml
 crashlytics.properties
 crashlytics-build.properties
 fabric.properties
+
+
+/config/config.yml

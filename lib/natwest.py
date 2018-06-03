@@ -6,7 +6,7 @@ import re
 import sys
 import time
 
-import yaml
+import pyvirtualdisplay
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
@@ -16,46 +16,32 @@ from selenium.webdriver.support.ui import Select, WebDriverWait
 from .constants import NATWEST_URL
 
 
-class ConfigManager():
-    def __init__(self):
-        with open(os.environ['HOME'] + '/.py_natwest.yml', 'r') as stream:
-            try:
-                self.config = yaml.load(stream)
-            except yaml.YAMLError as exc:
-                print(exc)
-
-    def get_config(self):
-        if not self.config:
-            sys.stderr.write('Unable to read config')
-            sys.exit(1)
-        else:
-            return self.config
-
-
 class Natwest():
     timeout = 10
 
-    def __init__(self):
-        #        display = pyvirtualdisplay.Display(visible=0, size=(1280, 1024,))
-        #        display.start()
+    def __init__(self, configmananger):
+        display = pyvirtualdisplay.Display(visible=0, size=(1280, 1024,))
+        display.start()
 
         self.driver = webdriver.Firefox(self.get_profile())
-        self.config = ConfigManager().get_config()
+        self.config = configmananger.get_config('natwest')
         self.main()
+        time.sleep(2)
+        self.driver.quit()
+        display.stop()
 
     # main functions
     def main(self):
-        print('Main?')
         self.get_page()
         self.enter_customer_number()
         self.login()
-        self.download_statement_alternative()
+        self.download_statement()
 
     def get_profile(self):
         profile = webdriver.FirefoxProfile()
         profile.set_preference('browser.download.folderList', 2)
         profile.set_preference('browser.download.manager.showWhenStarting', False)
-        profile.set_preference('browser.download.dir', '/tmp')
+        profile.set_preference('browser.download.dir', os.path.dirname(os.path.realpath(__file__)) + "/../tmp")
         profile.set_preference('browser.helperApps.neverAsk.saveToDisk', 'text/csv')
         return profile
 
@@ -164,7 +150,7 @@ class Natwest():
         Available Format Types:
         - Excel, Lotus 123, Text (CSV file)  
         '''
-        time_period.select_by_visible_text('Last two weeks')
+        time_period.select_by_visible_text('Last 2 months')
         export_type.select_by_visible_text('Excel, Lotus 123, Text (CSV file)')
         form.submit()
         # catching errors
@@ -172,6 +158,9 @@ class Natwest():
         if form_error != "":
             sys.stderr(form_error)
             sys.exit(1)
+        self.wait_for_iframe_load()
+        form = self.driver.find_element_by_name('aspnetForm')
+        form.find_element_by_id('ctl00_mainContent_SS7-LWLA_button_button').click()
 
     def download_statement_alternative(self):
         self.wait_for_iframe_load()
@@ -215,6 +204,3 @@ class Natwest():
         self.wait_for_iframe_load()
         form = self.driver.find_element_by_name('aspnetForm')
         form.find_element_by_id('ctl00_mainContent_SS7-LWLA_button_button').click()
-
-
-
